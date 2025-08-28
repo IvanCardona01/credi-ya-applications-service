@@ -3,6 +3,7 @@ package co.com.applicationsservice.usecase.application;
 import co.com.applicationsservice.model.application.Application;
 import co.com.applicationsservice.model.application.exceptions.ApplicationBusinessError;
 import co.com.applicationsservice.model.application.exceptions.InvalidApplicationData;
+import co.com.applicationsservice.model.application.exceptions.UserNotRegisteredError;
 import co.com.applicationsservice.model.application.gateways.ApplicationRepository;
 import co.com.applicationsservice.model.constants.BusinessConstants;
 import co.com.applicationsservice.model.loantype.gateways.LoanTypeRepository;
@@ -28,12 +29,22 @@ public class ApplicationUseCase {
     public Mono<Application> saveApplication(Application application) {
 
         return validateNotDuplicate(application)
+                .then(validateUserData(application))
                 .then(loanStatusUseCase.getDefaultLoanStatus())
                 .flatMap(defaultStatus -> {
                     application.setStatusId(defaultStatus.getId());
                     return validateApplication(application);
                 })
                 .flatMap(applicationRepository::saveApplication);
+    }
+
+    private Mono<Void> validateUserData(Application application) {
+        return applicationRepository.existsByClientDocument(application.getClientDocument()).flatMap(exist -> {
+            if (exist) {
+                return Mono.empty();
+            }
+            return Mono.error(new UserNotRegisteredError("documentNumber: " + application.getClientDocument() + "not found." + UseCaseConstants.USER_NOT_REGISTERED));
+        });
     }
     
     private Mono<Void> validateNotDuplicate(Application application) {

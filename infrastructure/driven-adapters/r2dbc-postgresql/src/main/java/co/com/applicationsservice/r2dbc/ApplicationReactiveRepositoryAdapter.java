@@ -89,6 +89,7 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
 
     @Override
     public Mono<Boolean> existsByClientDocument(String clientDocument) {
+
         return repository.existsByClientDocument(clientDocument);
     }
 
