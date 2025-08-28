@@ -43,5 +43,18 @@ management:
     health:
       probes:
         enabled: true
+logging:
+  level:
+    co.com.applicationsservice: DEBUG
+    reactor.netty.http.client: DEBUG
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  api-docs:
+    enabled: true
+  packages-to-scan: co.com.applicationsservice.api
