@@ -1,4 +1,6 @@
 package co.com.applicationsservice.model.application;
+import co.com.applicationsservice.model.loanstatus.LoanStatus;
+import co.com.applicationsservice.model.loantype.LoanType;
 import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,4 +18,7 @@ public class Application {
     private String clientDocument;
     private BigDecimal creditAmount;
     private Integer months;
+
+    private LoanStatus loanStatus;
+    private LoanType loanType;
 }
