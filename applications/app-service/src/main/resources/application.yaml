@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 spring:
   application:
     name: "ApplicationsService"
@@ -11,6 +11,14 @@ spring:
       path: "/h2"
   profiles:
     include: null
+adapters:
+  r2dbc:
+    host: localhost
+    port: 5432
+    database: application_service_db
+    schema: public
+    username: ivan
+    password: ivan123
 management:
   endpoints:
     web:
