@@ -88,12 +88,6 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
     }
 
     @Override
-    public Mono<Application> findByClientDocument(String clientDocument) {
-        return repository.findByClientDocument(clientDocument)
-                .flatMap(this::buildCompleteApplicationFromEntity);
-    }
-
-    @Override
     public Mono<Boolean> existsByClientDocument(String clientDocument) {
         return repository.existsByClientDocument(clientDocument);
     }
