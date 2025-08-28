@@ -19,6 +19,9 @@ public class Application {
     private BigDecimal creditAmount;
     private Integer months;
 
+    private Long statusId;
+    private Long typeId;
+
     private LoanStatus loanStatus;
     private LoanType loanType;
 }

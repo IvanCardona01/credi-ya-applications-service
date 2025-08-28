@@ -31,11 +31,55 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
 
     @Override
     public Mono<Application> saveApplication(Application application) {
-
-        return Mono.just(application)
+        return saveInternalApplication(application);
     }
 
+    private Mono<Application> saveInternalApplication(Application application) {
 
+        return validateReferences(application)
+                .then(Mono.fromCallable(() -> {
+                    ApplicationEntity entity = mapper.map(application, ApplicationEntity.class);
+                    entity.setTypeId(application.getTypeId());
+                    entity.setStatusId(application.getStatusId());
+                    return entity;
+                }))
+                .flatMap(repository::save)
+                .flatMap(this::buildCompleteApplicationFromEntity);
+    }
+
+    private Mono<Void> validateReferences(Application application) {
+        return Mono.when(
+                validateTypeExists(application.getTypeId()),
+                validateStatusExists(application.getStatusId())
+        );
+    }
+
+    private Mono<Void> validateTypeExists(Long typeId) {
+        return typeId != null
+                ? loanTypeReactiveRepository.existsById(typeId)
+                .filter(exists -> exists)
+                .switchIfEmpty(Mono.error(new RuntimeException("LoanType with ID " + typeId + " not found")))
+                .then()
+                : Mono.empty();
+    }
+
+    private Mono<Void> validateStatusExists(Long statusId) {
+        return statusId != null
+                ? loanStatusReactiveRepository.existsById(statusId)
+                .filter(exists -> exists)
+                .switchIfEmpty(Mono.error(new RuntimeException("LoanStatus with ID " + statusId + " not found")))
+                .then()
+                : Mono.empty();
+    }
+
+    private Mono<Application> buildCompleteApplicationFromEntity(ApplicationEntity entity) {
+        Application application = mapper.map(entity, Application.class);
+
+        return Mono.when(
+                validateAndSetType(entity, application),
+                validateAndSetStatus(entity, application)
+        ).thenReturn(application);
+    }
 
     @Override
     public Flux<Application> getAll() {

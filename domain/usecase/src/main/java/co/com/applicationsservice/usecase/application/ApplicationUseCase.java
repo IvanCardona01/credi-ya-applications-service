@@ -19,7 +19,10 @@ public class ApplicationUseCase {
     }
 
     public Mono<Application> saveApplication(Application application) {
-        //TODO: Apply Business Logic for this Use Case and sabe if is valid
-        return Mono.error(new RuntimeException("Unkown error"));
+        if (application.getTypeId() == null) {
+            return Mono.error(new IllegalArgumentException("LoanType ID is required"));
+        }
+
+        return applicationRepository.saveApplication(application);
     }
 }
