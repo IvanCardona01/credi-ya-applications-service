@@ -6,11 +6,14 @@ import co.com.applicationsservice.model.loanstatus.LoanStatus;
 import co.com.applicationsservice.model.loantype.LoanType;
 import co.com.applicationsservice.r2dbc.entity.ApplicationEntity;
 import co.com.applicationsservice.r2dbc.helper.ReactiveAdapterOperations;
+import lombok.extern.slf4j.Slf4j;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Repository
 public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperations<
         Application,
@@ -21,21 +24,26 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
 
     private final LoanTypeReactiveRepository loanTypeReactiveRepository;
     private final LoanStatusReactiveRepository loanStatusReactiveRepository;
+    private final TransactionalOperator transactionalOperator;
 
-    public ApplicationReactiveRepositoryAdapter(ApplicationReactiveRepository repository, LoanTypeReactiveRepository loanTypeReactiveRepository, LoanStatusReactiveRepository loanStatusReactiveRepository, ObjectMapper mapper) {
+    public ApplicationReactiveRepositoryAdapter(ApplicationReactiveRepository repository, 
+                                              LoanTypeReactiveRepository loanTypeReactiveRepository, 
+                                              LoanStatusReactiveRepository loanStatusReactiveRepository, 
+                                              ObjectMapper mapper,
+                                              TransactionalOperator transactionalOperator) {
         super(repository, mapper, d -> mapper.map(d, Application.class));
         this.loanTypeReactiveRepository = loanTypeReactiveRepository;
         this.loanStatusReactiveRepository = loanStatusReactiveRepository;
-
+        this.transactionalOperator = transactionalOperator;
     }
 
     @Override
     public Mono<Application> saveApplication(Application application) {
-        return saveInternalApplication(application);
+        return saveApplicationInternal(application)
+                .as(transactionalOperator::transactional);
     }
-
-    private Mono<Application> saveInternalApplication(Application application) {
-
+    
+    private Mono<Application> saveApplicationInternal(Application application) {
         return validateReferences(application)
                 .then(Mono.fromCallable(() -> {
                     ApplicationEntity entity = mapper.map(application, ApplicationEntity.class);
@@ -43,7 +51,7 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
                     entity.setStatusId(application.getStatusId());
                     return entity;
                 }))
-                .flatMap(repository::save)
+                .flatMap(entity -> repository.save(entity))
                 .flatMap(this::buildCompleteApplicationFromEntity);
     }
 
@@ -89,7 +97,6 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
 
     @Override
     public Mono<Boolean> existsByClientDocument(String clientDocument) {
-
         return repository.existsByClientDocument(clientDocument);
     }
 
