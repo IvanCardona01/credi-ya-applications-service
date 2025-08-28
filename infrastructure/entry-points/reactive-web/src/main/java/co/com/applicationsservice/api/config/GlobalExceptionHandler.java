@@ -5,6 +5,7 @@ import co.com.applicationsservice.model.application.exceptions.ApplicationBusine
 import co.com.applicationsservice.model.application.exceptions.InvalidApplicationData;
 import co.com.applicationsservice.model.application.exceptions.UserNotRegisteredError;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -24,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @Order(-2)
 public class GlobalExceptionHandler implements WebExceptionHandler {
@@ -37,6 +39,10 @@ public class GlobalExceptionHandler implements WebExceptionHandler {
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
         ServerHttpResponse response = exchange.getResponse();
         ServerRequest request = ServerRequest.create(exchange, HandlerStrategies.withDefaults().messageReaders());
+        String path = request.path();
+        
+        log.error("❌ [ERROR] Exception caught - Path: {}, Type: {}, Message: {}", 
+                 path, ex.getClass().getSimpleName(), ex.getMessage());
 
         if (response.isCommitted()) {
             return Mono.error(ex);
@@ -47,7 +53,7 @@ public class GlobalExceptionHandler implements WebExceptionHandler {
         ErrorResponseDTO errorResponse = ErrorResponseDTO.of(
                 errorInfo.code(),
                 errorInfo.message(),
-                request.path()
+                path
         );
 
         response.setStatusCode(errorInfo.status());

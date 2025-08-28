@@ -39,8 +39,12 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
 
     @Override
     public Mono<Application> saveApplication(Application application) {
+        log.debug("💾 [DB] Saving application for client: {}", application.getClientDocument());
         return saveApplicationInternal(application)
-                .as(transactionalOperator::transactional);
+                .as(transactionalOperator::transactional)
+                .doOnSuccess(saved -> log.debug("✅ [DB] Application saved successfully with ID: {}", saved.getId()))
+                .doOnError(error -> log.error("❌ [DB] Error saving application for client {}: {}", 
+                        application.getClientDocument(), error.getMessage()));
     }
     
     private Mono<Application> saveApplicationInternal(Application application) {
@@ -56,10 +60,13 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
     }
 
     private Mono<Void> validateReferences(Application application) {
+        log.debug("🔍 [DB] Validating references - Type ID: {}, Status ID: {}", 
+                application.getTypeId(), application.getStatusId());
         return Mono.when(
                 validateTypeExists(application.getTypeId()),
                 validateStatusExists(application.getStatusId())
-        );
+        ).doOnSuccess(v -> log.debug("✅ [DB] References validation completed"))
+         .doOnError(error -> log.error("❌ [DB] Reference validation failed: {}", error.getMessage()));
     }
 
     private Mono<Void> validateTypeExists(Long typeId) {
@@ -91,13 +98,20 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
 
     @Override
     public Flux<Application> getAll() {
+        log.debug("📋 [DB] Fetching all applications with complete data");
         return repository.findAll()
-                .flatMap(this::mapToApplicationWithCompletedData);
+                .flatMap(this::mapToApplicationWithCompletedData)
+                .doOnComplete(() -> log.debug("✅ [DB] Applications retrieved successfully"))
+                .doOnError(error -> log.error("❌ [DB] Error fetching applications: {}", error.getMessage()));
     }
 
     @Override
     public Mono<Boolean> existsByClientDocument(String clientDocument) {
-        return repository.existsByClientDocument(clientDocument);
+        log.debug("🔍 [DB] Checking application exists for client: {}", clientDocument);
+        return repository.existsByClientDocument(clientDocument)
+                .doOnSuccess(exists -> log.debug("✅ [DB] Client {} has application: {}", clientDocument, exists))
+                .doOnError(error -> log.error("❌ [DB] Error checking application for client {}: {}", 
+                        clientDocument, error.getMessage()));
     }
 
     private Mono<Application> mapToApplicationWithCompletedData(ApplicationEntity entity) {

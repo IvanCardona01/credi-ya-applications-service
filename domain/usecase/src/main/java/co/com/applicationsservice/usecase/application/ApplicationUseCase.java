@@ -28,7 +28,6 @@ public class ApplicationUseCase {
     }
 
     public Mono<Application> saveApplication(Application application) {
-
         return validateNotDuplicate(application)
                 .then(validateUserData(application))
                 .then(loanStatusUseCase.getDefaultLoanStatus())

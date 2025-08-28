@@ -13,11 +13,13 @@ import co.com.applicationsservice.usecase.application.ApplicationUseCase;
 import co.com.applicationsservice.usecase.loanstatus.LoanStatusUseCase;
 import co.com.applicationsservice.usecase.loantype.LoanTypeUseCase;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class Handler {
@@ -32,41 +34,52 @@ public class Handler {
 
 
     public Mono<ServerResponse> createApplication(ServerRequest request) {
+        log.info("🌐 [API] Creating application");
+        
         return request.bodyToMono(CreateApplicationDTO.class)
                 .map(applicationDTOMapper::toModel)
                 .flatMap(applicationUseCase::saveApplication)
-                .flatMap(savedApplication ->  ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(applicationDTOMapper.toDTO(savedApplication))
-                );
+                .map(applicationDTOMapper::toDTO)
+                .doOnNext(response -> log.info("🌐 [API] Application created - ID: {}", response.id()))
+                .flatMap(responseDTO -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(responseDTO))
+                .doOnError(error -> log.error("🌐 [API] Error creating application: {}", error.getMessage()));
     }
 
     public Mono<ServerResponse> getAllApplications(ServerRequest request) {
+        log.info("🌐 [API] Fetching all applications");
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
                 .body(
                         applicationUseCase.getAllApplications()
                                 .map(applicationDTOMapper::toDTO),
                         ApplicationResponseDTO.class
-                );
+                )
+                .doOnError(error -> log.error("🌐 [API] Error fetching applications: {}", error.getMessage()));
     }
 
     public Mono<ServerResponse> getAllLoanStatus(ServerRequest request) {
+        log.info("🌐 [API] Fetching loan statuses");
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
                 .body(
                         loanStatusUseCase.getAll()
                                 .map(loanStatusDTOMapper::toDTO),
                         LoanStatusResponseDTO.class
-                );
+                )
+                .doOnError(error -> log.error("🌐 [API] Error fetching loan statuses: {}", error.getMessage()));
     }
 
     public Mono<ServerResponse> getAllLoanTypes(ServerRequest request) {
+        log.info("🌐 [API] Fetching loan types");
         return ServerResponse.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
                 .body(
                         loanTypeUseCase.getAll()
                                 .map(loanTypeDTOMapper::toDTO),
                         LoanTypeResponseDTO.class
-                );
+                )
+                .doOnError(error -> log.error("🌐 [API] Error fetching loan types: {}", error.getMessage()));
     }
 }
