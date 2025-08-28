@@ -26,6 +26,14 @@ adapters:
     schema: public
     username: ivan
     password: ivan123
+  user-service:
+    base-url: http://localhost:8080
+    timeout: 3s
+  webclient:
+    connection-timeout: 1000
+    read-timeout: 3000
+    write-timeout: 3000
+    max-memory-size: 1048576
 management:
   endpoints:
     web:

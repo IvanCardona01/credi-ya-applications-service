@@ -3,6 +3,7 @@ package co.com.applicationsservice.api.config;
 import co.com.applicationsservice.api.dto.response.ErrorResponseDTO;
 import co.com.applicationsservice.model.application.exceptions.ApplicationBusinessError;
 import co.com.applicationsservice.model.application.exceptions.InvalidApplicationData;
+import co.com.applicationsservice.model.application.exceptions.UserNotRegisteredError;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.codec.DecodingException;
@@ -60,6 +61,8 @@ public class GlobalExceptionHandler implements WebExceptionHandler {
         return switch (ex) {
             case ApplicationBusinessError e ->
                     new ErrorInfo(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", e.getMessage());
+            case UserNotRegisteredError e ->
+                    new ErrorInfo(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", e.getMessage());
             case InvalidApplicationData e ->
                     new ErrorInfo(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", e.getMessage());
             case WebExchangeBindException e ->

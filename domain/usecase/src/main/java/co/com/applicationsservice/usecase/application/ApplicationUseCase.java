@@ -7,6 +7,7 @@ import co.com.applicationsservice.model.application.exceptions.UserNotRegistered
 import co.com.applicationsservice.model.application.gateways.ApplicationRepository;
 import co.com.applicationsservice.model.constants.BusinessConstants;
 import co.com.applicationsservice.model.loantype.gateways.LoanTypeRepository;
+import co.com.applicationsservice.model.user.gateways.UserRepository;
 import co.com.applicationsservice.usecase.constants.UseCaseConstants;
 import co.com.applicationsservice.usecase.loanstatus.LoanStatusUseCase;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class ApplicationUseCase {
     private final ApplicationRepository applicationRepository;
-
+    private final UserRepository userRepository;
     private final LoanStatusUseCase  loanStatusUseCase;
     private final LoanTypeRepository loanTypeRepository;
 
@@ -39,19 +40,24 @@ public class ApplicationUseCase {
     }
 
     private Mono<Void> validateUserData(Application application) {
-        return applicationRepository.existsByClientDocument(application.getClientDocument()).flatMap(exist -> {
-            if (exist) {
-                return Mono.empty();
-            }
-            return Mono.error(new UserNotRegisteredError("documentNumber: " + application.getClientDocument() + "not found." + UseCaseConstants.USER_NOT_REGISTERED));
-        });
+        if (application.getClientDocument() == null || application.getClientDocument().isEmpty()) {
+            return Mono.error(new InvalidApplicationData(UseCaseConstants.DOCUMENT_REQUIRED));
+        }
+        return userRepository.existsByDocument(application.getClientDocument())
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.empty();
+                    }
+                    return Mono.error(new UserNotRegisteredError(
+                        "User with document " + application.getClientDocument() + " " + UseCaseConstants.USER_NOT_REGISTERED
+                    ));
+                });
     }
     
     private Mono<Void> validateNotDuplicate(Application application) {
         if (application.getClientDocument() == null || application.getClientDocument().isEmpty()) {
             return Mono.error(new InvalidApplicationData(UseCaseConstants.DOCUMENT_REQUIRED));
         }
-        
         return applicationRepository.existsByClientDocument(application.getClientDocument())
                 .flatMap(exists -> {
                     if (exists) {
