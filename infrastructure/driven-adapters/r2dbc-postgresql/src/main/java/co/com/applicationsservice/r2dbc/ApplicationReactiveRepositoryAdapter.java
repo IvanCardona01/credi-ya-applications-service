@@ -87,6 +87,17 @@ public class ApplicationReactiveRepositoryAdapter extends ReactiveAdapterOperati
                 .flatMap(this::mapToApplicationWithCompletedData);
     }
 
+    @Override
+    public Mono<Application> findByClientDocument(String clientDocument) {
+        return repository.findByClientDocument(clientDocument)
+                .flatMap(this::buildCompleteApplicationFromEntity);
+    }
+
+    @Override
+    public Mono<Boolean> existsByClientDocument(String clientDocument) {
+        return repository.existsByClientDocument(clientDocument);
+    }
+
     private Mono<Application> mapToApplicationWithCompletedData(ApplicationEntity entity) {
         Application application = mapper.map(entity, Application.class);
 

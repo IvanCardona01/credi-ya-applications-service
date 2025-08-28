@@ -1,32 +1,84 @@
 package co.com.applicationsservice.usecase.application;
 
 import co.com.applicationsservice.model.application.Application;
+import co.com.applicationsservice.model.application.exceptions.ApplicationBusinessError;
+import co.com.applicationsservice.model.application.exceptions.InvalidApplicationData;
 import co.com.applicationsservice.model.application.gateways.ApplicationRepository;
-import co.com.applicationsservice.model.loanstatus.LoanStatus;
-import co.com.applicationsservice.model.loanstatus.gateways.LoanStatusRepository;
+import co.com.applicationsservice.model.constants.BusinessConstants;
 import co.com.applicationsservice.model.loantype.gateways.LoanTypeRepository;
+import co.com.applicationsservice.usecase.constants.UseCaseConstants;
 import co.com.applicationsservice.usecase.loanstatus.LoanStatusUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
 
 @RequiredArgsConstructor
 public class ApplicationUseCase {
     private final ApplicationRepository applicationRepository;
 
     private final LoanStatusUseCase  loanStatusUseCase;
+    private final LoanTypeRepository loanTypeRepository;
 
     public Flux<Application> getAllApplications(){
         return applicationRepository.getAll();
     }
 
     public Mono<Application> saveApplication(Application application) {
-        if (application.getTypeId() == null) {
-            return Mono.error(new IllegalArgumentException("LoanType ID is required"));
+
+        return validateNotDuplicate(application)
+                .then(loanStatusUseCase.getDefaultLoanStatus())
+                .flatMap(defaultStatus -> {
+                    application.setStatusId(defaultStatus.getId());
+                    return validateApplication(application);
+                })
+                .flatMap(applicationRepository::saveApplication);
+    }
+    
+    private Mono<Void> validateNotDuplicate(Application application) {
+        if (application.getClientDocument() == null || application.getClientDocument().isEmpty()) {
+            return Mono.error(new InvalidApplicationData(UseCaseConstants.DOCUMENT_REQUIRED));
         }
-        return loanStatusUseCase.getDefaultLoanStatus()
-                .doOnNext(defaultStatus -> application.setStatusId(defaultStatus.getId()))
-                .then(applicationRepository.saveApplication(application))
-                .onErrorMap(ex -> new RuntimeException("Failed to save application", ex));
+        
+        return applicationRepository.existsByClientDocument(application.getClientDocument())
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.error(new ApplicationBusinessError(UseCaseConstants.DUPLICATE_APPLICATION));
+                    }
+                    return Mono.empty();
+                });
+    }
+
+    private Mono<Application> validateApplication(Application application) {
+        return Mono.defer(() -> {
+            if (application.getCreditAmount() == null) {
+                return Mono.error(new InvalidApplicationData(UseCaseConstants.AMOUNT_REQUIRED));
+            }
+            if (application.getMonths() == null) {
+                return Mono.error(new InvalidApplicationData(UseCaseConstants.MONTH_REQUIRED));
+            }
+            if (application.getTypeId() == null) {
+                return Mono.error(new InvalidApplicationData(UseCaseConstants.LOAN_TYPE_REQUIRED));
+            }
+
+            BigDecimal minLoanAmount = new BigDecimal(String.valueOf(BusinessConstants.MIN_AMOUNT));
+            BigDecimal maxLoanAmount = new BigDecimal(String.valueOf(BusinessConstants.MAX_AMOUNT));
+            if (application.getCreditAmount().compareTo(minLoanAmount) < 0 || application.getCreditAmount().compareTo(maxLoanAmount) > 0 ) {
+                return Mono.error(new ApplicationBusinessError(UseCaseConstants.INVALID_AMOUNT_RANGE));
+            }
+
+            if (application.getMonths() < BusinessConstants.MIN_LOAN_MONTHS || application.getMonths() > BusinessConstants.MAX_LOAN_MONTHS) {
+                return Mono.error(new ApplicationBusinessError(UseCaseConstants.INVALID_MONT_RANGE));
+            }
+
+            return loanTypeRepository.existsById(application.getTypeId()).flatMap( exist -> {
+                    if (exist) {
+                        return Mono.just(application);
+                    }
+                    return  Mono.error(new ApplicationBusinessError(UseCaseConstants.LOAN_TYPE_UNKNOW));
+                }
+            );
+        });
     }
 }

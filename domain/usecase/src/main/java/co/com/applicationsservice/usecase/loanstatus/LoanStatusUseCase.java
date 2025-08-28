@@ -1,5 +1,6 @@
 package co.com.applicationsservice.usecase.loanstatus;
 
+import co.com.applicationsservice.model.constants.BusinessConstants;
 import co.com.applicationsservice.model.loanstatus.LoanStatus;
 import co.com.applicationsservice.model.loanstatus.gateways.LoanStatusRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,7 @@ public class LoanStatusUseCase {
     }
 
     public Mono<LoanStatus> getDefaultLoanStatus() {
-        Long defaultStatusId = 1L;
-        return loanStatusRepository.getById(defaultStatusId);
+        return loanStatusRepository.getById(BusinessConstants.DEFAULT_STATUS_ID);
     }
 
 }

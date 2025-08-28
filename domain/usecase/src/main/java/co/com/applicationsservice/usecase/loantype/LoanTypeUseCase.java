@@ -10,12 +10,12 @@ import reactor.core.publisher.Mono;
 public class LoanTypeUseCase {
     private final LoanTypeRepository loanTypeRepository;
 
-    public Mono<LoanType> getById(Long id) {
-        return loanTypeRepository.getById(id);
-    }
-
     public Flux<LoanType> getAll() {
         return loanTypeRepository.getAll();
+    }
+
+    public Mono<LoanType> getById(Long id) {
+        return loanTypeRepository.getById(id);
     }
 
     public Mono<Boolean> existsById(Long id) {

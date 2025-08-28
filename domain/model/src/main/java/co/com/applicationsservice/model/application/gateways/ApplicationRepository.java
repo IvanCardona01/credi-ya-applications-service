@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface ApplicationRepository {
     Flux<Application> getAll();
     Mono<Application> saveApplication(Application application);
+    Mono<Boolean> existsByClientDocument(String clientDocument);
 }
