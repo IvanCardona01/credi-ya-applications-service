@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Application {
+    private Long id;
     private String clientDocument;
     private BigDecimal creditAmount;
     private Integer months;

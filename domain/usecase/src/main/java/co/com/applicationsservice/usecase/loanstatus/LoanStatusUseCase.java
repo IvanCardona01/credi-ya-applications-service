@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 public class LoanStatusUseCase {
-    private final Long defaultStatusId;
     private final LoanStatusRepository loanStatusRepository;
 
     public Flux<LoanStatus> getAll() {
@@ -16,6 +15,7 @@ public class LoanStatusUseCase {
     }
 
     public Mono<LoanStatus> getDefaultLoanStatus() {
+        Long defaultStatusId = 1L;
         return loanStatusRepository.getById(defaultStatusId);
     }
 

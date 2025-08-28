@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Crear tabla loan_status -->
+    <changeSet id="006-create-table-loan-status" author="ivan">
+        <createTable tableName="loan_status" schemaName="public">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="loan_status" schemaName="public"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Insertar datos iniciales en loan_status -->
+    <changeSet id="007-insert-loan-status-data" author="ivan">
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="1"/>
+            <column name="name" value="Pendiente de revisión"/>
+            <column name="description" value="La solicitud fue recibida y está a la espera de ser evaluada."/>
+        </insert>
+        
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="2"/>
+            <column name="name" value="En revisión"/>
+            <column name="description" value="La solicitud está siendo analizada por el área correspondiente."/>
+        </insert>
+        
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="3"/>
+            <column name="name" value="Aprobado"/>
+            <column name="description" value="La solicitud fue aprobada exitosamente."/>
+        </insert>
+        
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="4"/>
+            <column name="name" value="Rechazado"/>
+            <column name="description" value="La solicitud no cumplió con los requisitos y fue rechazada."/>
+        </insert>
+        
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="5"/>
+            <column name="name" value="Documentación requerida"/>
+            <column name="description" value="El cliente debe adjuntar documentación adicional para continuar con el proceso."/>
+        </insert>
+        
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="6"/>
+            <column name="name" value="En desembolso"/>
+            <column name="description" value="La solicitud fue aprobada y se encuentra en proceso de desembolso."/>
+        </insert>
+        
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="7"/>
+            <column name="name" value="Desembolsado"/>
+            <column name="description" value="El crédito ya fue desembolsado al cliente."/>
+        </insert>
+        
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="8"/>
+            <column name="name" value="Cancelado por cliente"/>
+            <column name="description" value="El cliente canceló voluntariamente la solicitud de crédito."/>
+        </insert>
+        
+        <insert tableName="loan_status" schemaName="public">
+            <column name="id" value="9"/>
+            <column name="name" value="Expirado"/>
+            <column name="description" value="La solicitud venció por falta de acción en el tiempo estipulado."/>
+        </insert>
+
+        <rollback>
+            <delete tableName="loan_status" schemaName="public">
+                <where>id IN (1,2,3,4,5,6,7,8,9)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- Crear índice para el nombre del estado -->
+    <changeSet id="008-create-index-loan-status-name" author="ivan">
+        <createIndex indexName="idx_loan_status_name" tableName="loan_status" schemaName="public">
+            <column name="name"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_loan_status_name" tableName="loan_status" schemaName="public"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

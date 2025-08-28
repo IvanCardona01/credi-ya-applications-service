@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Crear tabla loan_types -->
+    <changeSet id="009-create-table-loan-types" author="ivan">
+        <createTable tableName="loan_types" schemaName="public">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="loan_types" schemaName="public"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Insertar datos iniciales en loan_types -->
+    <changeSet id="010-insert-loan-types-data" author="ivan">
+        <insert tableName="loan_types" schemaName="public">
+            <column name="id" value="1"/>
+            <column name="name" value="Préstamo Personal"/>
+            <column name="description" value="Préstamo de libre inversión para cubrir necesidades personales."/>
+        </insert>
+        
+        <insert tableName="loan_types" schemaName="public">
+            <column name="id" value="2"/>
+            <column name="name" value="Préstamo Hipotecario"/>
+            <column name="description" value="Préstamo destinado a la compra de vivienda nueva o usada."/>
+        </insert>
+        
+        <insert tableName="loan_types" schemaName="public">
+            <column name="id" value="3"/>
+            <column name="name" value="Préstamo Vehicular"/>
+            <column name="description" value="Préstamo para financiar la compra de vehículos nuevos o usados."/>
+        </insert>
+        
+        <insert tableName="loan_types" schemaName="public">
+            <column name="id" value="4"/>
+            <column name="name" value="Crédito Educativo"/>
+            <column name="description" value="Préstamo destinado a financiar estudios de pregrado o posgrado."/>
+        </insert>
+        
+        <insert tableName="loan_types" schemaName="public">
+            <column name="id" value="5"/>
+            <column name="name" value="Préstamo Empresarial"/>
+            <column name="description" value="Crédito otorgado a pequeñas, medianas y grandes empresas para capital de trabajo o inversión."/>
+        </insert>
+        
+        <insert tableName="loan_types" schemaName="public">
+            <column name="id" value="6"/>
+            <column name="name" value="Línea de Crédito Rotativa"/>
+            <column name="description" value="Crédito flexible con cupo aprobado que puede ser utilizado varias veces según necesidad."/>
+        </insert>
+        
+        <insert tableName="loan_types" schemaName="public">
+            <column name="id" value="7"/>
+            <column name="name" value="Microcrédito"/>
+            <column name="description" value="Préstamo de bajo monto dirigido a pequeños negocios y emprendedores."/>
+        </insert>
+        
+        <insert tableName="loan_types" schemaName="public">
+            <column name="id" value="8"/>
+            <column name="name" value="Préstamo de Consumo"/>
+            <column name="description" value="Préstamo para la adquisición de bienes de consumo duradero como electrodomésticos o tecnología."/>
+        </insert>
+
+        <rollback>
+            <delete tableName="loan_types" schemaName="public">
+                <where>id IN (1,2,3,4,5,6,7,8)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- Crear índice para el nombre del tipo de préstamo -->
+    <changeSet id="011-create-index-loan-types-name" author="ivan">
+        <createIndex indexName="idx_loan_types_name" tableName="loan_types" schemaName="public">
+            <column name="name"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_loan_types_name" tableName="loan_types" schemaName="public"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

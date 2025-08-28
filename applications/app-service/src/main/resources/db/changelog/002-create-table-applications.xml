@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Crear tabla applications -->
+    <changeSet id="004-create-table-applications" author="ivan">
+        <createTable tableName="applications" schemaName="public">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="client_document" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="credit_amount" type="DECIMAL(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="months" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="applications" schemaName="public"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Agregar índices para mejorar rendimiento -->
+    <changeSet id="005-create-indexes-applications" author="ivan">
+        <createIndex indexName="idx_applications_client_document" tableName="applications" schemaName="public">
+            <column name="client_document"/>
+        </createIndex>
+        
+        <createIndex indexName="idx_applications_status_id" tableName="applications" schemaName="public">
+            <column name="status_id"/>
+        </createIndex>
+        
+        <createIndex indexName="idx_applications_type_id" tableName="applications" schemaName="public">
+            <column name="type_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_applications_client_document" tableName="applications" schemaName="public"/>
+            <dropIndex indexName="idx_applications_status_id" tableName="applications" schemaName="public"/>
+            <dropIndex indexName="idx_applications_type_id" tableName="applications" schemaName="public"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

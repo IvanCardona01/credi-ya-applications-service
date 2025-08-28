@@ -11,6 +11,13 @@ spring:
       path: "/h2"
   profiles:
     include: null
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+    url: jdbc:postgresql://localhost:5432/application_service_db
+    user: ivan
+    password: ivan123
+    default-schema: public
 adapters:
   r2dbc:
     host: localhost

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 
+        Archivo maestro de migraciones para el Application Service
+        
+        Este archivo incluye todas las migraciones en el orden correcto:
+        1. Configuración de base de datos y usuario
+        2. Creación de tabla applications
+        3. Creación de tabla loan_status con datos iniciales
+        4. Creación de tabla loan_types con datos iniciales
+        
+        Cada migración está separada en archivos independientes para facilitar
+        el mantenimiento y versionado.
+    -->
+
+    <!-- Migración 1: Configurar base de datos y usuario ivan -->
+    <include file="db/changelog/001-create-database-and-user.xml"/>
+
+    <!-- Migración 2: Crear tabla applications -->
+    <include file="db/changelog/002-create-table-applications.xml"/>
+
+    <!-- Migración 3: Crear tabla loan_status e insertar datos iniciales -->
+    <include file="db/changelog/003-create-table-loan-status.xml"/>
+
+    <!-- Migración 4: Crear tabla loan_types e insertar datos iniciales -->
+    <include file="db/changelog/004-create-table-loan-types.xml"/>
+
+</databaseChangeLog>
